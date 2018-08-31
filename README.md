@@ -13,6 +13,24 @@ This repo contains six related ros nodes-
 * **[dense_stereo_node](https://github.com/ethz-asl/image_undistort#dense_stereo_node):** Performs the full dense stereo estimation (internally this node is just the stereo_undistort nodelet and the depth nodelet).
 * **[point_to_bearing_node](https://github.com/ethz-asl/image_undistort#point_to_bearing_node):** Takes in a 2D image location and transforms it into a bearing vector.
 
+## Dependencies
+Image undistort depends on ROS, OpenCV and Eigen. The point to bearing node also depends on NLopt (installed with `apt install libnlopt-dev`) and will only be built if it is found. 
+
+## Supported Camera and Distortion Models
+The only supported output is the pinhole camera model with no distortion. 
+Supported input models:
+
+* Pinhole with no distortion
+* Pinhole with radial-tangential distortion
+* Pinhole with equidistant distortion
+* Omnidirectional with no distortion
+* Omindirectional with rad-tan distortion
+* FOV
+* Unified
+* Extended Unified
+* Double Sphere 
+
+
 # image_undistort_node:
 A simple node for undistorting images. Handles plumb bob (aka radial-tangential), fov and equidistant distortion models. It can either use standard ros camera_info topics or load camera models in a form that is compatible with the camchain.yaml files produced by [Kalibr](https://github.com/ethz-asl/kalibr). Note this node can also be run as a nodelet named image_undistort/ImageUndistort
 
@@ -33,10 +51,10 @@ A simple node for undistorting images. Handles plumb bob (aka radial-tangential)
 * **input_camera_namespace** If the input camera parameters are loaded from ros parameters this is the namespace that will be searched. This is needed to allow both input and output to be loaded from parameters. (default: "input_camera")
 * **output_camera_namespace** If the output camera parameters are loaded from ros parameters this is the namespace that will be searched. (default: "output_camera").
 * **process_images** True to output a processed image, false if only a camera_info topic should be generated. (default: true).
-* **undistort** True to undistort the images, false to keep the distortion. (default: true).
+* **undistort_image** True to undistort the images, false to keep the distortion. (default: true).
 * **process_every_nth_frame** Used to temporarily down-sample the images, if it is <= 1 every frame will be processed. (default: 1).
 * **output_image_type** Converts the output image to the specified format, set to the empty string "" to preserve the input type. See [the cv_bridge tutorial](http://wiki.ros.org/cv_bridge/Tutorials/UsingCvBridgeToConvertBetweenROSImagesAndOpenCVImages) for possible format strings. (default: "").
-* **scale** Only used if **output_camera_info_source** is set to "auto_generated". The output focal length will be multiplied by this value. This has the effect of resizing the image by this scale factor. (default: 1.0).
+* **scale** Only used if **output_camera_info_source** is set to "auto_generated" or "match_input". The output focal length will be multiplied by this value. If "auto_generated" is set the image size will also be increased by this factor. (default: 1.0).
 * **publish_tf** True to publish the tf between the input and output image. If the undistortion involves changes to the rotation matrix the frame that the image is in will change. This tf gives that change. (default: true)
 * **output_frame** The name of the frame of the output images. (default: "output_camera")
 * **rename_input_frame** If the input frame should be renamed in the published topics and tf tree. (default: false)
@@ -94,6 +112,7 @@ A node that takes in the images and properties of two cameras and outputs rectif
 * **process_every_nth_frame** Used to temporarily down-sample the images, if it is <= 1 every frame will be processed. (default: 1).
 * **output_image_type** Converts the output images to the specified format, set to the empty string "" to preserve the input type. See [the cv_bridge tutorial](http://wiki.ros.org/cv_bridge/Tutorials/UsingCvBridgeToConvertBetweenROSImagesAndOpenCVImages) for possible format strings. (default: "").
 * **scale** The output focal length will be multiplied by this value. This has the effect of resizing the image by this scale factor. (default: 1.0).
+* **T_invert** Only used if loading parameters from ros params. True to invert the given transformations. (default: false)
 * **publish_tf** True to publish the tf between the first input and output image. If the undistortion involves changes to the rotation matrix the frame that the image is in will change. This tf gives that change. (default: true)
 * **output_frame** The name of the frame of the output images. (default: "first_camera_rect")
 * **rename_input_frame** If the input frame should be renamed in the published topics and tf tree. (default: false)
@@ -146,6 +165,7 @@ A node for producing dense stereo images. Internally this node simply combines 2
 * **first_camera_namespace** If the first camera parameters are loaded from ros parameters this is the namespace that will be searched. (default: "first_camera")
 * **second_camera_namespace** If the second camera parameters are loaded from ros parameters this is the namespace that will be searched. (default: "second_camera").
 * **scale** Only used if **output_camera_info_source** is set to "auto_generated". The output focal length will be multiplied by this value. This has the effect of resizing the image by this scale factor. (default: 1.0).
+* **T_invert** Only used if loading parameters from ros params. True to invert the given transformations. (default: false)
 * **process_every_nth_frame** Used to temporarily down-sample the images, if it is <= 1 every frame will be processed. (default: 1).
 * **output_image_type** Converts the output images to the specified format, set to the empty string "" to preserve the input type. See [the cv_bridge tutorial](http://wiki.ros.org/cv_bridge/Tutorials/UsingCvBridgeToConvertBetweenROSImagesAndOpenCVImages) for possible format strings. (default: "").
 * **scale** The output focal length will be multiplied by this value. This has the effect of resizing the image by this scale factor. (default: 1.0).

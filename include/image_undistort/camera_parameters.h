@@ -12,14 +12,25 @@ namespace image_undistort {
 
 enum class CameraSide { FIRST, SECOND };
 enum class CameraIO { INPUT, OUTPUT };
-enum class DistortionModel { RADTAN, EQUIDISTANT, FOV };
+enum class DistortionModel {
+  NONE,
+  RADTAN,
+  EQUIDISTANT,
+  FOV,
+  OMNI,
+  OMNIRADTAN,
+  DOUBLESPHERE,
+  UNIFIED,
+  EXTENDEDUNIFIED
+};
 enum class DistortionProcessing { UNDISTORT, PRESERVE };
 
 // holds basic properties of a camera
 class BaseCameraParameters {
  public:
   BaseCameraParameters(const ros::NodeHandle& nh,
-                       const std::string& camera_namespace);
+                       const std::string& camera_namespace,
+                       const bool invert_T);
 
   BaseCameraParameters(const sensor_msgs::CameraInfo& camera_info);
 
@@ -74,7 +85,8 @@ class BaseCameraParameters {
 class InputCameraParameters : public BaseCameraParameters {
  public:
   InputCameraParameters(const ros::NodeHandle& nh,
-                        const std::string& camera_namespace);
+                        const std::string& camera_namespace,
+                        const bool invert_T = false);
 
   InputCameraParameters(const sensor_msgs::CameraInfo& camera_info);
 
@@ -92,7 +104,7 @@ class InputCameraParameters : public BaseCameraParameters {
 
  private:
   static const DistortionModel stringToDistortion(
-      const std::string& distortion_model);
+      const std::string& distortion_model, const std::string& camera_model);
 
   std::vector<double> D_;
   DistortionModel distortion_model_;
@@ -113,7 +125,7 @@ class CameraParametersPair {
 
   bool setCameraParameters(const ros::NodeHandle& nh,
                            const std::string& camera_namespace,
-                           const CameraIO& io);
+                           const CameraIO& io, const bool invert_T = false);
 
   bool setCameraParameters(const sensor_msgs::CameraInfo& camera_info,
                            const CameraIO& io);
@@ -128,7 +140,7 @@ class CameraParametersPair {
                                  const Eigen::Matrix<double, 4, 4>& T,
                                  const Eigen::Matrix<double, 3, 3>& K);
 
-  bool setOutputFromInput();
+  bool setOutputFromInput(const double scale);
 
   bool setOptimalOutputCameraParameters(const double scale);
 
@@ -164,7 +176,7 @@ class StereoCameraParameters {
 
   bool setInputCameraParameters(const ros::NodeHandle& nh,
                                 const std::string& camera_namespace,
-                                const CameraSide& side);
+                                const CameraSide& side, const bool invert_T);
 
   bool setInputCameraParameters(const sensor_msgs::CameraInfo& camera_info,
                                 const CameraSide& side);
@@ -192,5 +204,5 @@ class StereoCameraParameters {
   CameraParametersPair first_;
   CameraParametersPair second_;
 };
-}
+}  // namespace image_undistort
 #endif  // CAMERA_PARAMETERS_H
